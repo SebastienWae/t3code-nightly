@@ -30,6 +30,15 @@ stdenv.mkDerivation {
     runHook postInstall
   '';
 
+  # The archive is prebuilt: check that it actually starts here (loader,
+  # libraries) before anyone gets it.
+  doInstallCheck = true;
+  installCheckPhase = ''
+    runHook preInstallCheck
+    HOME=$TMPDIR $out/bin/t3 --version
+    runHook postInstallCheck
+  '';
+
   meta = {
     description = "T3 Code server (nightly)";
     homepage = "https://github.com/pingdotgg/t3code";
