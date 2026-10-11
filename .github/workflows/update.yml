@@ -1,0 +1,35 @@
+# Every hour: pin the newest T3 Code nightly in source.json and push it.
+# Does nothing when there's no new nightly.
+name: update
+
+on:
+  schedule:
+    - cron: "41 * * * *"
+  workflow_dispatch:
+
+permissions: {}
+
+concurrency: update
+
+jobs:
+  update:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Pin the newest nightly
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version=$(./update.sh)
+          if git diff --quiet; then
+            echo "Already on $version"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -q -m "$version" -- source.json
+          git push
