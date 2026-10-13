@@ -2,17 +2,23 @@
   description = "T3 Code nightly server, packaged for Nix";
 
   inputs = {
-    # For wrapBuddy (see package.nix).
-    llm-agents.url = "github:numtide/llm-agents.nix";
-    nixpkgs.follows = "llm-agents/nixpkgs";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixpkgs-unstable";
+    # For wrapBuddy (see package.nix), built below with the same nixpkgs as
+    # the package: its loader starts the binary with that nixpkgs' ld.so,
+    # which must come from the same glibc as the libc the binary finds.
+    wrap-buddy = {
+      url = "github:Mic92/wrap-buddy";
+      flake = false;
+    };
   };
 
   outputs =
-    { nixpkgs, llm-agents, ... }:
+    { nixpkgs, wrap-buddy, ... }:
     let
       system = "x86_64-linux";
-      t3code-nightly = nixpkgs.legacyPackages.${system}.callPackage ./package.nix {
-        inherit (llm-agents.packages.${system}) wrapBuddy;
+      pkgs = nixpkgs.legacyPackages.${system};
+      t3code-nightly = pkgs.callPackage ./package.nix {
+        wrapBuddy = pkgs.callPackage "${wrap-buddy}/nix/package.nix" { sources = "${wrap-buddy}"; };
       };
     in
     {
@@ -21,6 +27,6 @@
         default = t3code-nightly;
       };
 
-      formatter.${system} = nixpkgs.legacyPackages.${system}.nixfmt-tree;
+      formatter.${system} = pkgs.nixfmt-tree;
     };
 }

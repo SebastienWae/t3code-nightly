@@ -17,10 +17,9 @@ inputs.t3code-nightly.url = "github:SebastienWae/t3code-nightly";
 
 `nix flake update t3code-nightly` moves to the newest nightly.
 
-To reuse your own nixpkgs and llm-agents (wrapBuddy) instead of the pinned
-ones:
+To build it with your own nixpkgs instead of the pinned one (wrapBuddy is
+built with it too):
 
 ```nix
 inputs.t3code-nightly.inputs.nixpkgs.follows = "nixpkgs";
-inputs.t3code-nightly.inputs.llm-agents.follows = "llm-agents";
 ```
